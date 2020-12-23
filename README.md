@@ -1,9 +1,7 @@
 # Daily Tsumego Problem in the console
+
+Add the following line into your ```.bashrc```:
+
 ```
-javascript
-    function fancyAlert(arg) {
-        if(arg) {
-            $.facebox({div:'#foo'})
-        }
-    }
+Path_to_repo/venv/bin/python Path_to_repo/tsumego.py
 ```

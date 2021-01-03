@@ -1,9 +1,24 @@
-#:kivy 2.0.0
+#:kivy 2.0
 
-<BadukPane>:
-    canvas.before:
-        Color:
-            rgba: 0.66,0.64,0.54,1
-        Rectangle:
-            pos: self.pos
-            size: self.size
+<TsumegoWidget>:
+    pane: game_area
+    next_button: nbutton
+    orientation: 'horizontal'
+    padding: 0
+
+    BoxLayout:
+        orientation: 'vertical'
+        Button:
+            id: nbutton
+            text: 'Next problem'
+            on_press: root.init_tsumego()
+        Button:
+            text: 'Reset'
+            on_press: root.reset_tsumego()
+        Button:
+            text: 'Progress'
+
+    BadukPane:
+        id: game_area
+        text: 'LOL'
+        size_hint_x: 4

@@ -1,9 +1,20 @@
 import random
 import os
 
+from kivy.config import Config
+Config.set('graphics','resizable', 0)
+Config.set('graphics', 'width', '1400')
+Config.set('graphics', 'height', '800')
+
+from kivy.uix.widget import Widget
 from kivy.uix.label import Label
+from kivy.uix.boxlayout import BoxLayout
 from kivy.app import App
 from kivy.clock import Clock
+from kivy.properties import (
+    NumericProperty, ReferenceListProperty, ObjectProperty
+)
+
 
 import sgf
 from gui.baduk_pane import BadukPane
@@ -26,33 +37,39 @@ def get_random_game(seed):
     return read_sgf(files[seed])
 
 
-class MainApp(App):
-    def build(self):
-        self.title = 'Baduk Trainer'
-        self.pane = BadukPane()
-        self.pane.build_gui()
+class TsumegoWidget(BoxLayout):
+    pane = ObjectProperty()
+    next_button = ObjectProperty()
+    current_seed = 0
 
+    def init(self):
+        Clock.schedule_once(lambda dt: self.pane.build_gui(), 0.1)
+        Clock.schedule_once(lambda dt: self.init_tsumego(), 0.1)
         Clock.schedule_interval(lambda dt: self.update(), 0.1)
-        self.current_seed = 1
-
-        self.reset_game()
-        self.update()
-
-        return self.pane
 
     def update(self):
         self.pane.update()
 
-    def reset_game(self):
-        self.current_seed += 1
+    def reset_tsumego(self):
+        self.tsumego.reset()
+
+    def init_tsumego(self):
         self.tsumego = Tsumego(get_random_game(self.current_seed))
-
-        if self.tsumego.get_starting_player() == Stone.BLACK:
-            Label(text="Black")
-            print('BLACK')
-
         self.pane.register_controller(self.tsumego)
         self.update()
+        self.current_seed += 1
+
+
+class MainApp(App):
+    def build(self):
+        self.title = 'Baduk Trainer'
+        self.widget = TsumegoWidget()
+        self.widget.init()
+
+        return self.widget
+
+    def reset_game(self):
+        self.widget.init_tsumego()
 
 
 if __name__ == '__main__':

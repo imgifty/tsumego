@@ -50,7 +50,6 @@ class Board:
         new = self.board.copy()
         for i in range(19*19):
             if self.board[i] == color and not self.reaches(i, Stone.NONE):
-                print(Board.un_flatten(i))
                 new[i] = Stone.NONE
         self.board = new
 
@@ -82,9 +81,6 @@ class Tsumego:
         self.state = root
         self.init_stones(root)
 
-        a = self.board.reaches(Board.flatten(0, 0), Stone.WHITE)
-        print(a)
-
     def init_stones(self, node):
         black = node.properties['AB']
         white = node.properties['AW']
@@ -96,6 +92,11 @@ class Tsumego:
         for stone in white:
             index = Tsumego.convert_sgf_position(stone)
             self.board.place_stone(index, Stone.WHITE)
+
+    def reset(self):
+        self.state = self.init_state
+        self.board = Board()
+        self.init_stones(self.init_state)
 
     @staticmethod
     def convert_sgf_position(stone):

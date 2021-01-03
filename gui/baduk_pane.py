@@ -27,7 +27,9 @@ class BadukPane(Widget):
         super(BadukPane, self).__init__(**kwargs)
         self.bind(pos=self.update_rect,
                   size=self.update_rect)
-        self.sound = SoundLoader.load('sounds/stone3.wav')
+        self.stone_sound = SoundLoader.load('sounds/stone3.wav')
+        self.solved_sound = SoundLoader.load('sounds/bell.wav')
+        self.solved_sound.volume = 0.2
 
 
     def update_rect(self, *args):
@@ -69,19 +71,14 @@ class BadukPane(Widget):
                 correct = self.controller.check_move((col, row))
 
                 if correct:
-                    self.sound.play()
+                    self.stone_sound.play()
                     self.controller.advance()
 
                     if self.controller.has_next():
-                        Clock.schedule_once(lambda dt: self.sound.play(), 0.4)
+                        Clock.schedule_once(lambda dt: self.stone_sound.play(), 0.4)
                         Clock.schedule_once(lambda dt: self.controller.advance(), 0.4)
-
-                    # else:
-                    #     app = App.get_running_app()
-                    #     app.reset_game()
-            # else:
-            #     app = App.get_running_app()
-            #     app.reset_game()
+                    else:
+                        self.solved_sound.play()
 
     def get_coordinate(self, position):
         col = round((position[0] - self.game_pos_x) / self.line_margin)

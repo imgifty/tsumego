@@ -1,73 +1,71 @@
-import os
-
-from kivy.uix.boxlayout import BoxLayout
-from kivy.app import App
-from kivy.config import Config
-from kivy.clock import Clock
-from kivy.properties import ObjectProperty
-
-import sgf
-from board import Tsumego
-
-Config.set('graphics', 'resizable', 0)
-Config.set('graphics', 'width', '1400')
-Config.set('graphics', 'height', '800')
-
-from gui.baduk_pane import BadukPane # noqa
-# from tracker import insert_problem, solved_daily_problem, get_solved_problems
+from board import Board, Stone
 
 
-def read_sgf(file_name):
-    with open(file_name) as f:
-        game = sgf.parse(f.read())
-        return game
+class Tsumego:
+    def __init__(self, sgf):
+        self.board = Board()
 
+        game_tree = sgf.children[0]
+        root = game_tree.nodes[0]
 
-def get_random_game(seed):
-    samples = '/home/alexander/Work/tsumego/samples/'
-    book = ('CD 1 - FAMOUS TSUMEGO COMPOSERS/'
-            'CHO CHIKUN Encyclopedia Life And Death - Elementary')
-    collection = os.path.join(samples, book)
+        self.init_state = root
+        self.state = root
+        self.init_stones(root)
 
-    files = [os.path.join(collection, f) for f in os.listdir(collection)]
+    def init_stones(self, node):
+        black = node.properties['AB']
+        white = node.properties['AW']
 
-    return read_sgf(files[seed])
+        for stone in black:
+            index = Tsumego.convert_sgf_position(stone)
+            self.board.place_stone(index, Stone.BLACK)
 
+        for stone in white:
+            index = Tsumego.convert_sgf_position(stone)
+            self.board.place_stone(index, Stone.WHITE)
 
-class TsumegoWidget(BoxLayout):
-    pane = ObjectProperty()
-    next_button = ObjectProperty()
-    current_seed = 0
+    def reset(self):
+        self.state = self.init_state
+        self.board = Board()
+        self.init_stones(self.init_state)
 
-    def init(self):
-        Clock.schedule_once(lambda dt: self.pane.build_gui(), 0.1)
-        Clock.schedule_once(lambda dt: self.init_tsumego(), 0.1)
-        Clock.schedule_interval(lambda dt: self.update(), 0.1)
+    @staticmethod
+    def convert_sgf_position(stone):
+        index = Board.flatten(ord(stone[1]) - 97, ord(stone[0]) - 97)
+        return index
 
-    def update(self):
-        self.pane.update()
+    def has_next(self):
+        if self.state.next is not None:
+            return True
+        return False
 
-    def reset_tsumego(self):
-        self.tsumego.reset()
+    def advance(self):
+        if self.state.next is not None:
+            self.state = self.state.next
+            added = self.state.properties
+            color = 'B' if 'B' in added else 'W'
+            value = added[color]
+            assert len(value) == 1
+            index = Tsumego.convert_sgf_position(value[0])
+            color = Stone.WHITE if color == 'W' else Stone.BLACK
+            self.board.place_stone(index, color)
+            return True
+        return False
 
-    def init_tsumego(self):
-        self.tsumego = Tsumego(get_random_game(self.current_seed))
-        self.pane.register_controller(self.tsumego)
-        self.update()
-        self.current_seed += 1
+    def check_move(self, stone):
+        added = self.state.next.properties
+        color = 'B' if 'B' in added else 'W'
+        value = added[color]
+        assert len(value) == 1
 
+        should_be = Tsumego.convert_sgf_position(value[0])
+        move = Board.flatten(*stone)
+        if should_be == move:
+            return True
+        return False
 
-class MainApp(App):
-    def build(self):
-        self.title = 'Baduk Trainer'
-        self.widget = TsumegoWidget()
-        self.widget.init()
-
-        return self.widget
-
-    def reset_game(self):
-        self.widget.init_tsumego()
-
-
-if __name__ == '__main__':
-    MainApp().run()
+    def get_starting_player(self):
+        next_state = self.init_state.next
+        added = next_state.properties
+        color = Stone.BLACK if 'B' in added else Stone.WHITE
+        return color

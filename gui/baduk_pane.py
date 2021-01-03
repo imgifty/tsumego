@@ -2,7 +2,7 @@ import kivy
 from kivy.config import Config
 kivy.require('2.0.0')
 
-Config.set('graphics','resizable',0)
+Config.set('graphics','resizable', 0)
 Config.set('graphics', 'width', '1000')
 Config.set('graphics', 'height', '800')
 
@@ -11,6 +11,7 @@ from kivy.core.text.markup import MarkupLabel as CoreMarkupLabel
 
 from kivy.properties import NumericProperty
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.resources import resource_find
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
@@ -23,9 +24,9 @@ from board import Board, Stone
 class BadukPane(Widget):
     def update(self):
         self.canvas.clear()
-        for i in range(len(self.controller.board)):
+        for i in range(len(self.controller.board.board)):
             row, col = Board.un_flatten(i)
-            color = self.controller.board[i]
+            color = self.controller.board.board[i]
             if color == Stone.WHITE:
                 self.draw_stone(1, row, col)
             elif color == Stone.BLACK:
@@ -51,14 +52,19 @@ class BadukPane(Widget):
         self.color = not self.color
         row, col = self.get_coordinate(touch.pos)
         if 0 <= row < 19 and 0 <= col < 19:
-            out = self.controller.suggest_move((col, row))
-            print(out)
+            if self.controller.has_next():
+                correct = self.controller.check_move((col, row))
 
-            if out:
-                more = self.controller.advance()
-                print(more)
-                if more:
+                if correct:
                     self.controller.advance()
+                    if self.controller.has_next():
+                        self.controller.advance()
+                    else:
+                        app = App.get_running_app()
+                        app.reset_game()
+            else:
+                app = App.get_running_app()
+                app.reset_game()
 
     def get_coordinate(self, position):
         col = round((position[0] - self.game_pos_x) / self.line_margin)

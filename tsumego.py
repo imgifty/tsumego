@@ -1,25 +1,20 @@
-import random
 import os
 
+from kivy.uix.boxlayout import BoxLayout
+from kivy.app import App
 from kivy.config import Config
-Config.set('graphics','resizable', 0)
+from kivy.clock import Clock
+from kivy.properties import ObjectProperty
+
+import sgf
+from board import Tsumego
+
+Config.set('graphics', 'resizable', 0)
 Config.set('graphics', 'width', '1400')
 Config.set('graphics', 'height', '800')
 
-from kivy.uix.widget import Widget
-from kivy.uix.label import Label
-from kivy.uix.boxlayout import BoxLayout
-from kivy.app import App
-from kivy.clock import Clock
-from kivy.properties import (
-    NumericProperty, ReferenceListProperty, ObjectProperty
-)
-
-
-import sgf
-from gui.baduk_pane import BadukPane
-from board import Board, Stone, Tsumego
-from tracker import insert_problem, solved_daily_problem, get_solved_problems
+from gui.baduk_pane import BadukPane # noqa
+# from tracker import insert_problem, solved_daily_problem, get_solved_problems
 
 
 def read_sgf(file_name):
@@ -30,7 +25,9 @@ def read_sgf(file_name):
 
 def get_random_game(seed):
     samples = '/home/alexander/Work/tsumego/samples/'
-    collection = os.path.join(samples, 'CD 1 - FAMOUS TSUMEGO COMPOSERS/CHO CHIKUN Encyclopedia Life And Death - Elementary')
+    book = ('CD 1 - FAMOUS TSUMEGO COMPOSERS/'
+            'CHO CHIKUN Encyclopedia Life And Death - Elementary')
+    collection = os.path.join(samples, book)
 
     files = [os.path.join(collection, f) for f in os.listdir(collection)]
 

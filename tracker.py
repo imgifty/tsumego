@@ -9,9 +9,9 @@ def get_connection(db_name):
 
 
 def create_table(connection):
-    connection.execute('''CREATE TABLE IF NOT EXISTS 
-                                 problems (collection TEXT, 
-                                           seed INT, 
+    connection.execute('''CREATE TABLE IF NOT EXISTS
+                                 problems (collection TEXT,
+                                           seed INT,
                                            success BOOL,
                                            date date,
                                            UNIQUE(collection, seed)
@@ -42,20 +42,23 @@ def solved_daily_problem():
 
 
 def get_solved_problems(collection):
-    sql = f"""SELECT collection, seed FROM problems WHERE success=True AND collection='{collection}'"""
+    sql = f"""SELECT collection, seed
+              FROM problems WHERE
+              success=True AND collection='{collection}'"""
     indices = []
     for collection, i in connection.execute(sql):
         indices.append(i)
-    
+
     return indices
 
 
 def insert_problem(collection, seed, success):
     today = date.today()
-    sql = f'''INSERT INTO problems VALUES ('{collection}', {seed}, {success}, {today})'''
+    sql = f'''INSERT INTO problems VALUES
+              ('{collection}', {seed}, {success}, {today})'''
     try:
         connection.execute(sql)
         connection.commit()
         return True
-    except sqlite3.IntegrityError as e:
+    except sqlite3.IntegrityError:
         return False

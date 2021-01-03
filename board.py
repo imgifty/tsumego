@@ -27,7 +27,9 @@ class Board:
                 visited.add(state)
 
                 neighbours = [n for n in self.neighbours[state]
-                              if (self.board[n] == init_color or self.board[n] == color) and n not in visited]
+                              if (self.board[n] == init_color or
+                              self.board[n] == color) and
+                              n not in visited]
                 states.extend(neighbours)
 
             return False
@@ -39,8 +41,10 @@ class Board:
 
         for i in range(19*19):
             row, col = Board.un_flatten(i)
-            others = [(row - i, col - j) for i, j in [(-1, 0), (1, 0), (0, -1), (0, 1)]]
-            valid = [Board.flatten(*i) for i in others if 0 <= i[0] < 19 and 0 <= i[1] < 19]
+            others = [(row - i, col - j)
+                      for i, j in [(-1, 0), (1, 0), (0, -1), (0, 1)]]
+            valid = [Board.flatten(*i)
+                     for i in others if 0 <= i[0] < 19 and 0 <= i[1] < 19]
             self.neighbours[Board.flatten(row, col)] = valid
 
     def is_legal_move(self, index, color):
@@ -122,7 +126,6 @@ class Tsumego:
         return False
 
     def check_move(self, stone):
-        next_state = self.state.next
         added = self.state.next.properties
         color = 'B' if 'B' in added else 'W'
         value = added[color]
